@@ -1,27 +1,36 @@
-variable "rg1"{
+variable "newrg"{
     type = string
 }
 variable "loc"{
     type = string
 }
-variable "storagename"{
-    type= string
+variable "vnet"{
+    type = string
 }
-variable "vnetname"{
-    type= string
+variable "sub"{
+    type = string
 }
-variable "subnet"{
-    type= string
+variable "pip"{
+    type = string
+}
+variable "nic"{
+    type = string
 }
 variable "nsg"{
-    type= string
+    type = string
 }
-variable "ani"{
-    type= string
+variable "avm"{
+    type = string
 }
-variable "bpip"{
-    type= string
+# variable "size"{
+#     type = string
+# }
+variable "user"{
+    type = string
 }
-variable "azvm"{
-    type= string
+variable "pass"{
+    type = string
+}
+variable "account"{
+    type = string
 }

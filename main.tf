@@ -1,122 +1,115 @@
 #RG
-resource "azurerm_resource_group" "brg"{
-    name = var.rg1
+resource "azurerm_resource_group" "rgblock"{
+    name = var.newrg
     location = var.loc
 }
-#STORAGE
-resource "azurerm_storage_account" "bstore"{
-    depends_on = [azurerm_resource_group.brg]
-    name = var.storagename
+#vnet
+resource "azurerm_virtual_network" "vnetblock" {
+    depends_on = [ azurerm_resource_group.rgblock ]
+    name = var.vnet
     location = var.loc
-    resource_group_name = var.rg1
-    account_tier ="Standard"
-    account_replication_type = "GRS"
-    tags = {
-                environment = "test"
-                managed_by = "Anup"
-            }
+    resource_group_name = var.newrg
+    address_space = ["10.0.0.0/16"]
 }
-#VNET
-resource "azurerm_virtual_network" "bvnet"{
-    depends_on = [azurerm_resource_group.brg]
-    name = var.vnetname
-    location = var.loc
-    resource_group_name = var.rg1
-    address_space = ["10.0.0.0/24"]
+#subnet
+resource "azurerm_subnet" "subnetblock"{
+    depends_on = [ azurerm_virtual_network.vnetblock , azurerm_resource_group.rgblock ]
+    name = var.sub
+    virtual_network_name = var.vnet
+    resource_group_name = var.newrg
+    address_prefixes = ["10.0.1.0/24"]
 }
-#Subnet
-resource "azurerm_subnet" "bsub"{
-     depends_on = [azurerm_virtual_network.bvnet,azurerm_resource_group.brg]
-    name= var.subnet
-    virtual_network_name = var.vnetname
-    resource_group_name = var.rg1
-    address_prefixes = ["10.0.0.0/27"]
-    }
-    #publicip
-    resource "azurerm_public_ip" "cpip"{
-        depends_on = [azurerm_resource_group.brg]
-        name = var.bpip
-        location = var.loc
-        resource_group_name = var.rg1
-        allocation_method = "Static"
-    }
-    #Nsg
-    resource "azurerm_network_security_group" "gnsg"{
-        depends_on = [azurerm_resource_group.brg]
-        name = var.nsg
-        resource_group_name = var.rg1
-        location = var.loc
-        security_rule{
-            name="asr"
-            priority = 100
-            direction = "Inbound"
-            access ="Allow"
-            protocol = "Tcp"
-            source_port_range = "*"
-            destination_port_range = "22"
-            source_address_prefix = "*"
-            destination_address_prefix = "*"
-           
-        }
-    }
-resource "azurerm_network_interface" "bni"{
-    depends_on = [azurerm_subnet.bsub,azurerm_public_ip.cpip]
-    name= var.ani
+#public_ip
+resource "azurerm_public_ip" "pipblock"{
+    depends_on = [ azurerm_resource_group.rgblock ]
+    name = var.pip
     location = var.loc
-    resource_group_name = var.rg1
+    resource_group_name = var.newrg
+    allocation_method = "Static"
+    sku = "Standard"
+}
+#network_interface
+resource "azurerm_network_interface" "nicblock"{
+    depends_on = [ azurerm_subnet.subnetblock , azurerm_public_ip.pipblock ]
+    name = var.nic
+    location = var.loc
+    resource_group_name = var.newrg
     ip_configuration{
-        name = "test"
-        subnet_id = data.azurerm_subnet.gsub.id
+        name = "aic"
+        subnet_id = data.azurerm_subnet.dsub.id
         private_ip_address_allocation = "Dynamic"
-      public_ip_address_id = data.azurerm_public_ip.gpip.id
+        public_ip_address_id = data.azurerm_public_ip.dpip.id
     }
 }
-data "azurerm_subnet" "gsub"{
-     depends_on = [azurerm_subnet.bsub]
-    name =var.subnet
-    virtual_network_name = var.vnetname
-    resource_group_name = var.rg1
+data "azurerm_subnet" "dsub"{
+    depends_on = [ azurerm_subnet.subnetblock ]
+    name =var.sub
+    virtual_network_name = var.vnet
+    resource_group_name = var.newrg
 }
-data "azurerm_public_ip" "gpip"{
-    depends_on = [azurerm_resource_group.brg,azurerm_public_ip.cpip]
-    name =var.bpip
-    resource_group_name = var.rg1
+data "azurerm_public_ip" "dpip" {
+    depends_on = [ azurerm_public_ip.pipblock ]
+    name = var.pip
+    resource_group_name =var.newrg
+    
 }
-resource "azurerm_network_interface_security_group_association" "anisg"{
-    depends_on = [azurerm_network_interface.bni,azurerm_network_security_group.gnsg]
-    network_interface_id = data.azurerm_network_interface.dni.id
-    network_security_group_id = data.azurerm_network_security_group.dsg.id
-}
-data "azurerm_network_interface" "dni"{
-     depends_on = [azurerm_network_interface.bni]
-    name =var.ani
-    resource_group_name = var.rg1
-}
-data "azurerm_network_security_group" "dsg"{
-    depends_on = [azurerm_network_security_group.gnsg]
-    name =var.nsg
-    resource_group_name = var.rg1
-}
-resource "azurerm_linux_virtual_machine" "avm"{
-    name = var.azvm
+#nsg
+resource "azurerm_network_security_group" "nsgblock"{
+    depends_on = [ azurerm_resource_group.rgblock ]
+    name = var.nsg
     location = var.loc
-    resource_group_name = var.rg1
+    resource_group_name = var.newrg
+    security_rule{
+        name = "asr"
+        priority = 100
+        direction= "Inbound"
+        access = "Allow"
+        protocol = "Tcp"
+        source_port_range = "*"
+        destination_port_range = "22"
+        source_address_prefix = "*"
+        destination_address_prefix =  "*"
+    }
+}
+#association
+resource "azurerm_network_interface_security_group_association" "nic_nsg_assoiation"{
+    depends_on = [ azurerm_network_interface.nicblock , azurerm_network_security_group.nsgblock ]
+    network_interface_id = data.azurerm_network_interface.dnic.id
+    network_security_group_id = data.azurerm_network_security_group.dnsg.id
+}
+data "azurerm_network_interface" "dnic" {
+    depends_on = [ azurerm_network_interface.nicblock ]
+    name = var.nic
+    resource_group_name = var.newrg
+}
+data "azurerm_network_security_group" "dnsg" {
+    depends_on = [ azurerm_network_security_group.nsgblock ]
+    name = var.nsg
+    resource_group_name = var.newrg
+}
+#VM
+resource "azurerm_linux_virtual_machine" "vmblock" {
+    depends_on = [azurerm_network_interface.nicblock]
+    name = var.avm
+    location = var.loc
+    resource_group_name = var.newrg
     size = "Standard_D2s_v3"
-    admin_username = "adminuser"
-    admin_password = "Adminpass@123"
-    network_interface_ids = [azurerm_network_interface.bni.id]
-    disable_password_authentication = false
+    admin_username = var.user
+    admin_password = var.pass
+    network_interface_ids = [ azurerm_network_interface.nicblock.id ]
+    disable_password_authentication = "false"
     os_disk{
         caching = "ReadWrite"
-        storage_account_type = "Standard_LRS"
+        storage_account_type = var.account
     }
-   source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
+  source_image_reference {
+  publisher = "canonical"
+  offer     = "ubuntu-24_04-lts"
+  sku       = "server"
+  version   = "latest"
 }
 }
-output "vmip"{
-    value= azurerm_public_ip.cpip.ip_address
+output "vmip" {
+    value = azurerm_public_ip.pipblock.ip_address
 }
+
