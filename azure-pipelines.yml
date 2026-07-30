@@ -18,7 +18,11 @@ steps:
   inputs:
     provider: 'azurerm'
     command: 'init'
+    backendAzureRmUseEntraIdForAuthentication: false
+    backendAzureRmUseCliFlagsForAuthentication: true
+    backendServiceArm: 'svc'
+    backendAzureRmOverrideSubscriptionID: '05dbb74f-6152-4a1d-a1fd-c49be5c3fd99'
     backendAzureRmResourceGroupName: 'rg1'
-    backendAzureRmStorageAccountName: 'sona88ranjeet'
+    backendAzureRmStorageAccountName: 'sonal88ranjeet'
     backendAzureRmContainerName: 'ranjeet'
     backendAzureRmKey: 'app.tfstate'
