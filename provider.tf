@@ -5,6 +5,12 @@ terraform {
         version = "4.68.0"
     }
   }
+backend "azurerm" {
+    resource_group_name  = "rg1"
+    storage_account_name = "sonal88ranjeet"
+    container_name       = "ranjeet"
+    key                  = "app.tfstate"
+  }
 }
 provider "azurerm"{
     features{}
