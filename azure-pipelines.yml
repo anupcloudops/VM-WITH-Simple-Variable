@@ -22,7 +22,7 @@ steps:
     backendAzureRmUseCliFlagsForAuthentication: true
     backendServiceArm: 'svc'
     backendAzureRmOverrideSubscriptionID: '05dbb74f-6152-4a1d-a1fd-c49be5c3fd99'
-    backendAzureRmResourceGroupName: 'rg1'
-    backendAzureRmStorageAccountName: 'sonal88ranjeet'
-    backendAzureRmContainerName: 'ranjeet'
+    backendAzureRmResourceGroupName: 'for-backend'
+    backendAzureRmStorageAccountName: 'pipelinekeliye'
+    backendAzureRmContainerName: 'pipestorage'
     backendAzureRmKey: 'app.tfstate'
