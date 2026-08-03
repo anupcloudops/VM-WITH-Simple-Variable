@@ -6,9 +6,9 @@ terraform {
     }
   }
 backend "azurerm" {
-    resource_group_name  = "rg1"
-    storage_account_name = "sonal88ranjeet"
-    container_name       = "ranjeet"
+    resource_group_name  = "for-backend"
+    storage_account_name = "pipelinekeliye"
+    container_name       = "pipestorage"
     key                  = "app.tfstate"
   }
 }
