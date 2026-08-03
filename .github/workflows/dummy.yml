@@ -1,19 +1,57 @@
+name: terraform_workflow
 
-name: dummy_workflow
-on:  
-  workflow_dispatch:
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+  pull_request:
+    branches:
+      - main
+
 permissions:
   id-token: write
-  contents: read  
+  contents: read
+
 jobs:
-  build:
+  terraform:
     runs-on: self-hosted
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: azure login OIDC
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: 7732d75f-b6e3-46e8-9b93-44b791e428a8
           tenant-id: 271363dd-c06f-4cf7-9801-1caf3c8e1855
           subscription-id: 05dbb74f-6152-4a1d-a1fd-c49be5c3fd99
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # 🔒 Apply only on main, but AFTER approval
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        environment:
+          name: production   # 👈 this triggers manual approval
+
+      # 🔍 Run tfsec only on PR
+      - name: Run tfsec
+        if: github.event_name == 'pull_request'
+        uses: aquasecurity/tfsec-action@v1.0.3
+
+      # 🔍 Run checkov only on PR
+      - name: Run Checkov
+        if: github.event_name == 'pull_request'
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
