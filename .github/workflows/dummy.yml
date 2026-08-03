@@ -8,5 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: azure login
-        run: az login --service-principal -u 7732d75f-b6e3-46e8-9b93-44b791e428a8 -p yIM8Q~dCYummEo1f6HHSDXVkZUjMR25bA2ZBzc-V --tenant 271363dd-c06f-4cf7-9801-1caf3c8e1855
+      - name: azure login OIDC
+        uses: azure/login@v2
+        with:
+          client-id: 7732d75f-b6e3-46e8-9b93-44b791e428a8
+          tenant-id: 271363dd-c06f-4cf7-9801-1caf3c8e1855
+          subscription-id: 05dbb74f-6152-4a1d-a1fd-c49be5c3fd99
