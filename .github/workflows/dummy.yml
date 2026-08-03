@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
+  plan:
     runs-on: self-hosted
 
     steps:
@@ -37,12 +37,12 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # 🔒 Apply only on main, but AFTER approval
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve tfplan
-        environment:
-          name: production   # 👈 this triggers manual approval
+      # Save tfplan for next job
+      - name: Upload tfplan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: tfplan
 
       # 🔍 Run tfsec only on PR
       - name: Run tfsec
@@ -55,3 +55,37 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
+
+  apply:
+    needs: plan
+    runs-on: self-hosted
+
+    # 👇 Only run on main branch
+    if: github.ref == 'refs/heads/main'
+
+    # 👇 THIS is correct place for environment
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: 7732d75f-b6e3-46e8-9b93-44b791e428a8
+          tenant-id: 271363dd-c06f-4cf7-9801-1caf3c8e1855
+          subscription-id: 05dbb74f-6152-4a1d-a1fd-c49be5c3fd99
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Download tfplan
+      - name: Download tfplan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
