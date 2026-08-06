@@ -49,3 +49,17 @@ stages:
            provider: 'azurerm'
            command: 'plan'
            environmentServiceNameAzureRM: 'svc'
+  -  stage: terraform_apply
+     jobs:
+      - job: apply
+        displayName: apply
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            backendServiceArm: 'svc'
+            backendAzureRmResourceGroupName: 'for-backend'
+            backendAzureRmStorageAccountName: 'pipelinekeliye'
+            backendAzureRmContainerName: 'pipestorage'
+            backendAzureRmKey: 'rtp.tfstate'
