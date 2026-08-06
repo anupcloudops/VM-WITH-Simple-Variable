@@ -2,33 +2,16 @@ trigger:
 - main
 
 pool: asr
-  
+
 jobs:
  - job: terraform_install
    displayName: install
    steps:
-     - 
-- task: TerraformInstaller@1
-  inputs:
-    terraformVersion: 'latest'
-
- - job: terraform_init_plan
-   displayName: init_pan
-   dependsOn: terraform_install
-   steps:
-     - 
-- task: TerraformTask@5
-  inputs:
-    provider: 'azurerm'
-    command: 'init'
-    backendServiceArm: 'svc'
-    backendAzureRmResourceGroupName: 'for-backend'
-    backendAzureRmStorageAccountName: 'pipelinekeliye'
-    backendAzureRmContainerName: 'pipestorage'
-    backendAzureRmKey: 'rtp.tfstate'
-
-- task: TerraformTask@5
-  inputs:
-    provider: 'azurerm'
-    command: 'plan'
-    environmentServiceNameAzureRM: 'svc'
+     - task: TerraformTask@5
+       inputs:
+         provider: 'azurerm'
+         command: 'init'
+         backendAzureRmResourceGroupName: 'for-backend'
+         backendAzureRmStorageAccountName: 'pipelinekeliye'
+         backendAzureRmContainerName: 'pipestorage'
+         backendAzureRmKey: 'rtp.tfstate'
