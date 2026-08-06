@@ -55,16 +55,12 @@ stages:
       - job: manual
         pool: server
         displayName: validation
-        timeoutInMinutes: 2
+        timeoutInMinutes: 1
         steps:
-
         - task: ManualValidation@1
           inputs:
             notifyUsers: 'Anup'
-            approvers: 'anupeworld@gmail.com'
-
-
-
+            approvers: 'anup@vaishalikahakar91outlook.onmicrosoft.com'
       - job: apply
         displayName: apply
         dependsOn: manual
