@@ -49,10 +49,28 @@ stages:
            provider: 'azurerm'
            command: 'plan'
            environmentServiceNameAzureRM: 'svc'
+
   -  stage: terraform_apply
      jobs:
+      - job: manual
+        pool: server
+        displayName: validation
+        timeoutInMinutes: 2
+        steps:
+
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'Anup'
+            approvers: 'anupeworld@gmail.com'
+
+
+
       - job: apply
         displayName: apply
+        dependsOn: manual
+        condition: and(succeeded(),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
         steps:
         - task: TerraformTask@5
           inputs:
