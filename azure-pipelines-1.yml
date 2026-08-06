@@ -7,11 +7,6 @@ jobs:
  - job: terraform_install
    displayName: install
    steps:
-     - task: TerraformTask@5
+     - task: TerraformInstaller@1
        inputs:
-         provider: 'azurerm'
-         command: 'init'
-         backendAzureRmResourceGroupName: 'for-backend'
-         backendAzureRmStorageAccountName: 'pipelinekeliye'
-         backendAzureRmContainerName: 'pipestorage'
-         backendAzureRmKey: 'rtp.tfstate'
+         terraformVersion: 'latest'
