@@ -33,11 +33,7 @@ stages:
     jobs:
      - job: init
        steps:
-       - task: TerraformTask@5
-         inputs:
-           provider: 'azurerm'
-           command: 'plan'
-           environmentServiceNameAzureRM: 'svc'
+
        - task: TerraformTask@5
          inputs:
             provider: 'azurerm'
@@ -47,3 +43,9 @@ stages:
             backendAzureRmStorageAccountName: 'pipelinekeliye'
             backendAzureRmContainerName: 'pipestorage'
             backendAzureRmKey: 'rtp.tfstate'
+
+       - task: TerraformTask@5
+         inputs:
+           provider: 'azurerm'
+           command: 'plan'
+           environmentServiceNameAzureRM: 'svc'
