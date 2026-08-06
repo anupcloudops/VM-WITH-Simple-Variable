@@ -3,10 +3,45 @@ trigger:
 
 pool: asr
 
-jobs:
- - job: terraform_install
-   displayName: install
-   steps:
-     - task: TerraformInstaller@1
-       inputs:
-         terraformVersion: 'latest'
+stages:
+  - stage: terraform_install
+    jobs:
+
+
+      - job: dependency_install
+        displayName: install
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+
+      - job: terraform_fmt
+        displayName: fmt
+        dependsOn: dependency_install
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'custom'
+            outputTo: 'console'
+            customCommand: 'terraform fmt'
+            environmentServiceNameAzureRM: 'svc'
+
+  - stage: init_plan
+    jobs:
+     - job: init
+       steps:
+       - task: TerraformTask@5
+         inputs:
+           provider: 'azurerm'
+           command: 'plan'
+           environmentServiceNameAzureRM: 'svc'
+       - task: TerraformTask@5
+         inputs:
+            provider: 'azurerm'
+            command: 'init'
+            backendServiceArm: 'svc'
+            backendAzureRmResourceGroupName: 'for-backend'
+            backendAzureRmStorageAccountName: 'pipelinekeliye'
+            backendAzureRmContainerName: 'pipestorage'
+            backendAzureRmKey: 'rtp.tfstate'
